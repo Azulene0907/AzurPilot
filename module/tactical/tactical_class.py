@@ -305,13 +305,16 @@ class RewardTacticalClass(Dock):
             logger.attr('Filtered', before - self.books.count)
             logger.attr('Books', str(self.books))
 
-    def _is_current_skill_max(self):
+    def _is_current_skill_max(self, skip_first_screenshot=True):
         """
         检测当前选中的技能是否已满级（基于教材选择界面的经验 OCR）。
+        方法内部会自行截图，不依赖调用方是否已更新 self.device.image。
 
         Returns:
             bool: 如果当前技能已满级返回 True
         """
+        if not skip_first_screenshot:
+            self.device.screenshot()
         try:
             current, _, total = SKILL_EXP.ocr(self.device.image)
             if total > 0 and current >= total:
@@ -353,7 +356,9 @@ class RewardTacticalClass(Dock):
         # 寻找下一个非满级技能
         selected_skill = self.find_not_full_level_skill(skip_first_screenshot=True)
         if selected_skill is None:
-            logger.info('No other non-max skill available for this ship')
+            logger.info('No other non-max skill available for this ship, return to tactical page')
+            self.device.click(BACK_ARROW)
+            self.device.sleep((0.3, 0.5))
             return False
 
         # 选中并确认新技能
@@ -369,6 +374,8 @@ class RewardTacticalClass(Dock):
                 return True
             self.device.sleep((0.3, 0.5))
         logger.warning('Failed to enter TACTICAL_CLASS_START after skill switch')
+        self.device.click(BACK_ARROW)
+        self.device.sleep((0.3, 0.5))
         return False
 
     def _tactical_books_choose(self):
@@ -383,44 +390,54 @@ class RewardTacticalClass(Dock):
             out: Unknown, may TACTICAL_CLASS_START, page_tactical, or _tactical_animation_running
         """
         logger.hr('Tactical books choose', level=2)
-        if not self._tactical_books_get():
-            return False
+        MAX_SWITCH_RETRIES = 3
+        for retry in range(MAX_SWITCH_RETRIES + 1):
+            if not self._tactical_books_get():
+                return False
 
-        self.device.click_record_clear()
-        # Ensure first book is focused
-        # For slow PCs, selection may have changed
-        first = self.books[0]
-        self._tactical_book_select(first)
+            self.device.click_record_clear()
+            # Ensure first book is focused
+            # For slow PCs, selection may have changed
+            first = self.books[0]
+            self._tactical_book_select(first)
 
-        # Apply complex filter, modifies self.books
-        self._tactical_books_filter_exp()
+            # Apply complex filter, modifies self.books
+            self._tactical_books_filter_exp()
 
-        # Apply configuration filter, does not modify self.books
-        BOOK_FILTER.load(self.config.Tactical_TacticalFilter)
-        books = BOOK_FILTER.apply(self.books.grids)
-        logger.attr('Book_sort', ' > '.join([str(book) for book in books]))
+            # Apply configuration filter, does not modify self.books
+            BOOK_FILTER.load(self.config.Tactical_TacticalFilter)
+            books = BOOK_FILTER.apply(self.books.grids)
+            logger.attr('Book_sort', ' > '.join([str(book) for book in books]))
 
-        # Choose applicable book if any
-        # Otherwise cancel altogether
-        if len(books):
-            book = books[0]
-            if str(book) != 'first':
-                self._tactical_book_select(book)
-            else:
-                logger.info('Choose first book')
-                self._tactical_book_select(first)
-            logger.info(f'_tactical_books_choose -> {TACTICAL_CLASS_START}')
-            self.device.click(TACTICAL_CLASS_START)
-        else:
+            # Choose applicable book if any
+            # Otherwise cancel altogether
+            if len(books):
+                book = books[0]
+                if str(book) != 'first':
+                    self._tactical_book_select(book)
+                else:
+                    logger.info('Choose first book')
+                    self._tactical_book_select(first)
+                logger.info(f'_tactical_books_choose -> {TACTICAL_CLASS_START}')
+                self.device.click(TACTICAL_CLASS_START)
+                return True
+
             # 无教材可选时，检测是否因为技能已满级（受 SkillAutoSwitch 配置控制）
-            if self.config.Tactical_SkillAutoSwitch and self._is_current_skill_max():
-                logger.info('No books because skill is max, try switch to next skill')
-                if self._try_switch_to_next_skill():
-                    logger.info('Switched to next skill, re-enter book choose')
-                    return self._tactical_books_choose()
-            logger.info('Cancel tactical')
-            logger.info(f'_tactical_books_choose -> {TACTICAL_CLASS_CANCEL}')
-            self.device.click(TACTICAL_CLASS_CANCEL)
+            if not self.config.Tactical_SkillAutoSwitch:
+                break
+            if retry >= MAX_SWITCH_RETRIES:
+                logger.warning('Max skill switch retries reached')
+                break
+            if not self._is_current_skill_max(skip_first_screenshot=True):
+                break
+            logger.info('No books because skill is max, try switch to next skill')
+            if not self._try_switch_to_next_skill():
+                break
+            logger.info('Switched to next skill, re-enter book choose')
+
+        logger.info('Cancel tactical')
+        logger.info(f'_tactical_books_choose -> {TACTICAL_CLASS_CANCEL}')
+        self.device.click(TACTICAL_CLASS_CANCEL)
         return True
 
     def handle_rapid_training(self):

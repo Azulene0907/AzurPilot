@@ -211,12 +211,17 @@ class StorageHandler(GlobeOperation, ZoneManager):
             button (Button): Ship
             skip_first_screenshot:
 
+        Returns:
+            bool: True if repaired successfully, False if repair pack insufficient.
+
         Pages:
             in: STORAGE_FLEET_CHOOSE
             out: STORAGE_FLEET_CHOOSE
         """
         self.interval_clear(POPUP_CANCEL)
         self.device.click_record_clear()
+        # 超时保护：维修箱耗尽时游戏弹出"道具不足"弹窗，若未被识别则超时退出
+        timeout = Timer(15, count=30).start()
         while 1:
             if skip_first_screenshot:
                 skip_first_screenshot = False
@@ -224,32 +229,44 @@ class StorageHandler(GlobeOperation, ZoneManager):
                 self.device.screenshot()
 
             image = self.image_crop(area_offset(button.area, (0, 10)), copy=False)
-            # End
+            # End - ship fixed (blue selection background disappeared)
             if self.appear(STORAGE_REPAIR_CONFIRM, offset=(20, 20)) and \
                     not self.image_color_count(image, color=(93, 148, 203), count=300):
                 logger.info('Ship Fixed')
-                break
+                return True
+            # End - ship already at full HP
             if self.handle_popup_cancel('STORAGE_REPAIR_FULL_CANCEL'):
                 logger.info('No need to fix this ship')
-                break
+                return True
+            # 处理"道具不足"弹窗：维修箱数量不足时游戏弹出此提示，需点击取消退出
+            # 截图显示弹窗标题为"信息 INFORMATION"，内容为"道具不足"，底部有取消按钮
+            if self.appear_then_click(POPUP_CANCEL, offset=(20, 20), interval=2):
+                logger.warning('Repair pack insufficient (道具不足), skip this ship')
+                return False
+            # 超时保护：防止未知弹窗导致死循环
+            if timeout.reached():
+                logger.warning('repair_pack_use_confirm timeout, repair pack may be exhausted')
+                return False
 
             if self.appear_then_click(STORAGE_REPAIR_CONFIRM, offset=(20, 20)):
                 continue
 
-
     def repair_pack_use(self, button):
         """
-        Select a ship that needs to be repaired, then use repair packs
+        Select a ship that needs to be repaired, then use repair packs.
 
         Args:
             button (Button): Ship
+
+        Returns:
+            bool: True if repaired successfully, False if repair pack insufficient.
 
         Pages:
             in: STORAGE_FLEET_CHOOSE
             out: STORAGE_FLEET_CHOOSE
         """
         self.repair_ship_select(button)
-        self.repair_pack_use_confirm(button)
+        return self.repair_pack_use_confirm(button)
 
     def storage_repair_cancel(self):
         """

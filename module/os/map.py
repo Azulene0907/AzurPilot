@@ -390,7 +390,15 @@ class OSMap(OSFleet, Map, GlobeCamera, StorageHandler, StrategicSearchHandler):
             )
             for index, repair in enumerate(check):
                 if repair:
-                    self.repair_pack_use(hp_grids.buttons[index])
+                    # repair_pack_use 返回 False 表示维修箱耗尽，停止继续修理
+                    success = self.repair_pack_use(hp_grids.buttons[index])
+                    if not success:
+                        logger.warning(
+                            f'Repair pack exhausted while repairing fleet {fleet_index}, '
+                            'stop repairing remaining ships'
+                        )
+                        self.hp_reset()
+                        return False
             logger.info(f"All ships in fleet {fleet_index} repaired")
             self.hp_reset()
             return True

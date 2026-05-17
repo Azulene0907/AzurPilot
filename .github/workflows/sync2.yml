@@ -24,14 +24,10 @@ jobs:
       - name: sync
         if: env.gitcode_key && env.gitcode_token && env.gitcode_user
         run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          export GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10"
           git remote remove upstream-mirror 2>/dev/null || true
-          git remote add upstream-mirror "git@gitcode.com:${GITCODE_USER}/${REPO}.git"
+          git remote add upstream-mirror "https://${GITCODE_USER}:${GITCODE_TOKEN}@gitcode.com/${GITCODE_USER}/${REPO}.git"
           git push --force upstream-mirror "HEAD:${GITHUB_REF_NAME}" 2>&1 | sed 's/./*/g'
         env:
-          SSH_KEY: ${{ secrets.GITCODE_PRIVATE_KEY }}
           GITCODE_USER: ${{ secrets.GITCODE_USER }}
+          GITCODE_TOKEN: ${{ secrets.GITCODE_TOKEN }}
           REPO: ${{ github.event.repository.name }}

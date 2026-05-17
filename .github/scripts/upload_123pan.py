@@ -195,6 +195,7 @@ def single_upload(session, token, parent_file_id, remote_path, path):
         "filename": remote_path,
         "etag": hashlib.md5(file_bytes).hexdigest(),
         "size": str(len(file_bytes)),
+        "containDir": "true",
     }
     result = api_json(
         session,

@@ -1914,6 +1914,10 @@
     "FortChoreMeowfficer": {
       "name": "喵窝互动 (。・ω・。)",
       "help": "清扫、喂食、逗猫喵"
+    },
+    "OverflowCoins": {
+      "name": "资金超过X停止",
+      "help": "资金超过X停止当前任务\n0表示无资金限制"
     }
   },
   "MeowfficerTrain": {

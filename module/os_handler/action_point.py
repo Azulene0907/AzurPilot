@@ -118,18 +118,18 @@ class ActionPointHandler(UI, MapEventHandler):
     def _is_in_month_end_purchase_block_week():
         """
         Block weekly AP purchases during the natural week (Mon-Sun) that contains
-        the last day of the current server month. Purchase becomes available again
-        after entering the next month.
+        the first day of next server month. Purchase becomes available again
+        after entering the next server month.
         """
         diff = server_time_offset()
         server_now = datetime.now() - diff
         next_month = (server_now.replace(day=28) + timedelta(days=4)).replace(
             hour=0, minute=0, second=0, microsecond=0
         )
-        month_end = next_month.replace(day=1) - timedelta(days=1)
+        next_month_start = next_month.replace(day=1)
         current_week_start = server_now.date() - timedelta(days=server_now.weekday())
-        month_end_week_start = month_end.date() - timedelta(days=month_end.weekday())
-        return current_week_start == month_end_week_start
+        next_month_week_start = next_month_start.date() - timedelta(days=next_month_start.weekday())
+        return current_week_start == next_month_week_start
 
     def _is_in_action_point(self):
         return self.appear(ACTION_POINT_USE, offset=(20, 20))

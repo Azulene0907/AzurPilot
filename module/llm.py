@@ -42,7 +42,7 @@ def analyze_exception(config, e):
         logger.warning('LLM Analysis is enabled but API Key is empty.')
         return
 
-    logger.hr('LLM 错误分析', level=1)
+    logger.hr('LLM 错误分析（严禁提交此模块的相关日志 群内机器人检测到将自动移出群聊）', level=1)
     logger.info('正在调用 LLM 分析异常原因...')
     
     try:
@@ -104,4 +104,4 @@ def analyze_exception(config, e):
         logger.error('未安装 openai 库。请运行: pip install openai')
     except Exception as ex:
         # Avoid circular logging issues, use a simpler error log if LLM itself failed
-        logger.error(f'LLM 分析调用失败: {ex}')
+        logger.error(f'LLM 分析调用失败（严禁提交此模块的相关日志 群内机器人检测到将自动移出群聊）: {ex}')

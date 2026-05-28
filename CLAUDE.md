@@ -616,3 +616,67 @@ GitHub Actions 使用 `uv sync --frozen` 和 `uv run`。运行：ruff lint、`bu
 | `.agent/GAME-FUNCTIONS.md` | 28 个游戏功能模块综合分析 |
 | `.agent/OS-SYSTEM.md` | 大世界系统（6 个子模块） |
 | `.agent/INFRASTRUCTURE.md` | 基础设施层（统计、通知、守护、WebUI） |
+
+## Git 提交规范
+
+### 提交前分析
+
+提交代码前，必须分析当前 git 工作区中所有未提交的修改（staged、unstaged、untracked），按以下原则组织提交：
+
+1. **理解修改目的**：主动理解每个修改的真实目的，不要简单粗暴地一次性提交
+2. **合理聚合**：按功能目标 / 修复目的 / 重构范围 / 工程变更进行聚合
+3. **语义边界**：避免把无关修改混在同一个 commit 中，拆分出具有明确语义边界的 commits
+4. **区分变更类型**：
+   - 格式化、重命名、类型修复、lint 修复 → 独立提交
+   - 依赖变更、配置调整 → 独立提交
+   - 核心逻辑变更 → 独立提交
+5. **识别污染**：识别 AI 生成代码中常见的"顺手修改污染"（无关 import、无意义格式改动、调试代码、日志残留等）
+
+### 提交前检查
+
+检查是否存在以下不应提交的内容：
+- 临时代码、console/debug 输出
+- 注释掉的大段废弃逻辑
+- 未使用文件
+- cache/build/dist 产物
+- prompt/debug/test residue
+- accidentally committed artifacts
+
+### 提交信息格式
+
+使用 Conventional Commits 风格，中文撰写：
+
+```
+<type>(<scope>): <描述为什么改>
+```
+
+Type 类型：
+- `feat`: 新功能
+- `fix`: 修复 bug
+- `refactor`: 重构
+- `perf`: 性能优化
+- `chore`: 工程变更
+- `docs`: 文档更新
+- `test`: 测试相关
+- `build`: 构建相关
+- `ci`: CI 相关
+
+要求：
+- message 不要空泛，要体现"为什么改"
+- 避免"修改代码""更新逻辑"这种低信息量描述
+- 尽量体现真实意图、影响范围、架构意义
+
+### 示例
+
+```bash
+git add module/base/base.py &&
+git commit -m "feat(base): 引入任务级上下文隔离机制" && \
+git add module/config/watcher.py &&
+git commit -m "fix(config): 修复长期记忆污染导致的状态串扰问题" && \
+git add alas.py module/daemon/ &&
+git commit -m "refactor(runtime): 拆分 workspace 调度与 agent 生命周期管理"
+```
+
+### 强耦合说明
+
+如果某些修改之间存在强耦合导致无法拆分，请在提交说明中注明原因。

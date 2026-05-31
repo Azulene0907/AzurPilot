@@ -1,4 +1,4 @@
-﻿# 此文件是 Alas WebUI 的核心逻辑入口类文件。
+# 此文件是 Alas WebUI 的核心逻辑入口类文件。
 # 基于 PyWebIO 框架构建了整个可视化控制台，包括任务配置渲染、仪表盘展示、多实例切换及实时日志流转发等前端功能。
 import os
 import re
@@ -378,6 +378,8 @@ class AlasGUI(Frame):
         if theme == "socialism":
             pywebio_theme = "default"
         if theme == "apple":
+            pywebio_theme = "default"
+        if theme == "children":
             pywebio_theme = "default"
 
         webconfig(theme=pywebio_theme)
@@ -1008,6 +1010,26 @@ class AlasGUI(Frame):
                             "refresh_text": "#007aff",
                         }
                     )
+                elif self.theme == "children":
+                    md3_colors.update(
+                        {
+                            "toolbar_border": "rgba(255, 182, 193, .6)",
+                            "toolbar_bg": "rgba(255, 250, 240, .96)",
+                            "toolbar_shadow": "0 2px 8px rgba(255, 182, 193, .2)",
+                            "segment_border": "rgba(255, 160, 122, .4)",
+                            "segment_divider": "rgba(255, 160, 122, .2)",
+                            "segment_outline": "rgba(135, 206, 250, .4)",
+                            "segment_bg": "rgba(255, 255, 255, .8)",
+                            "text": "#6b5a59",
+                            "label": "#8e7877",
+                            "hover": "rgba(255, 192, 203, .2)",
+                            "selected_bg": "rgba(255, 182, 193, .3)",
+                            "selected_text": "#e05275",
+                            "selected_outline": "rgba(255, 182, 193, .5)",
+                            "refresh_text": "#e05275",
+                        }
+                    )
+
 
                 put_html(f"""
                 <style>
@@ -4382,6 +4404,7 @@ class AlasGUI(Frame):
                     {"label": "Dark", "value": "dark", "color": "dark"},
                     {"label": "新春 ", "value": "socialism", "color": "danger"},
                     {"label": "Apple", "value": "apple", "color": "primary"},
+                    {"label": "🧸 童趣", "value": "children", "color": "warning"},
                 ],
                 onclick=lambda t: set_theme(t),
             ).style("text-align: center")
@@ -4542,6 +4565,8 @@ class AlasGUI(Frame):
 
         elif self.theme == "socialism":
             add_css(filepath_css("socialism-alas"))
+        elif self.theme == "children":
+            add_css(filepath_css("children-alas"))
         else:
             add_css(filepath_css("light-alas"))
 

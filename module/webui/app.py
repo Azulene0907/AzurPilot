@@ -4993,7 +4993,17 @@ def app():
     args, _ = parser.parse_known_args()
 
     # Apply config
-    AlasGUI.set_theme(theme=State.deploy_config.Theme)
+    theme = State.deploy_config.Theme
+    from datetime import datetime
+    current_date = datetime.now().date()
+    if theme == "default" and (
+        (current_date.month == 6 and current_date.day == 1) or
+        (current_date.month == 5 and current_date.day == 31) or
+        (current_date.month == 6 and current_date.day == 2)
+    ):
+        theme = "children"
+
+    AlasGUI.set_theme(theme=theme)
     lang.LANG = State.deploy_config.Language
     key = args.key or State.deploy_config.Password
     cdn = args.cdn if args.cdn else State.deploy_config.CDN

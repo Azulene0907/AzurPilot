@@ -43,8 +43,9 @@ class MeowfficerBuy(MeowfficerBase):
             logger.info(f'Already bought {bought}/{total} today, stopped')
             return 0
 
-        # 基础购买
-        baseline = min(max(0, self.config.Meowfficer_BuyAmount - bought), today_left)
+        # 基础购买，每天第 1 个箱子是免费的，因此在 bought == 0 时至少购买 1 个
+        free_limit = 1 if bought == 0 else 0
+        baseline = min(max(free_limit, self.config.Meowfficer_BuyAmount - bought), today_left)
 
         # 溢出购买
         overflow_th = self.config.Meowfficer_OverflowCoins

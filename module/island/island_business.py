@@ -235,11 +235,16 @@ class IslandBusiness(Island):
         logger.info("=== 开始经营模块 ===")
         self.goto_postmanage()
         self.device.sleep(1)
-        logger.info("切换到经营页签")
-        self.post_manage_mode(POST_MANAGE_BUSINESS)
-        self.device.sleep(3)
         
         # 处理每日首次进入可能出现的美食评审界面
+        # 必须在切换页签前处理，否则弹窗会阻挡页签按钮导致 post_manage_mode() 陷入死循环
+        self._handle_food_review()
+        
+        logger.info("切换到经营页签")
+        self.post_manage_mode(POST_MANAGE_BUSINESS)
+        self.device.sleep(1)
+        
+        # 切换页签后再次处理可能出现的弹窗
         self._handle_food_review()
         
         # 标记本轮是否曾处理过蓝色开始经营按钮
@@ -461,9 +466,11 @@ class IslandBusiness(Island):
             
             # 检测到"经营结算"按钮 → 优先处理结算（必须在 ISLAND_BACK 之前检测，
             # 防止结算界面出现时返回按钮也被检测到而导致提前退出）
-            elif self.appear(BUSINESS_SETTLEMENT, offset=30):
+            # 同时检测偏移150px位置（美食评审模式）
+            settlement = self._appear_at_positions(BUSINESS_SETTLEMENT)
+            if settlement:
                 logger.info("检测到经营结算按钮")
-                self.device.click(BUSINESS_SETTLEMENT)
+                self.device.click(settlement)
                 self.device.sleep(1)
             
             # 检测到"获得物品" → 点击安全区域

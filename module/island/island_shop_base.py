@@ -330,7 +330,7 @@ class IslandShopBase(Island, WarehouseOCR):
                     continue
                 deficit = target - current
                 # 检查能否至少生产一部分（>0 即材料部分可得）
-                if self.get_max_producible(name, min(6, deficit)) <= 0:
+                if self.get_max_producible(name, min(6, deficit), skip_zero_materials=True) <= 0:
                     logger.info(f"槽位{idx + 1} {name} 材料完全不足，本轮跳过")
                     continue
                 self.to_post_products[name] = deficit
@@ -629,8 +629,16 @@ class IslandShopBase(Island, WarehouseOCR):
 
         return result
 
-    def get_max_producible(self, product, requested_quantity):
-        """获取最大可生产数量（修正版）"""
+    def get_max_producible(self, product, requested_quantity, skip_zero_materials=False):
+        """获取最大可生产数量。
+
+        Args:
+            product: 产品名称
+            requested_quantity: 请求生产数量
+            skip_zero_materials: 需求计算阶段为 True，原料库存为 0 时不阻断套餐，
+                                 交给 process_meal_requirements 分解需求。
+                                 排产阶段为 False，严格检查避免游戏层拒绝导致 stalled。
+        """
         max_producible = requested_quantity
         logger.info(f"检查 {product} 的最大可生产数量，需求: {requested_quantity}")
 
@@ -645,9 +653,14 @@ class IslandShopBase(Island, WarehouseOCR):
                     continue
                 max_by_material = material_stock // quantity_per
                 if max_by_material <= 0:
-                    # 该原料仓库库存为 0，但本店可生产，不阻断套餐
-                    logger.info(f"  {product} 原材料 {material} 库存不足（库存: {material_stock}），跳过此原料限制")
-                    continue
+                    if skip_zero_materials:
+                        # 需求计算阶段：不阻断，留给 process_meal_requirements 分解
+                        logger.info(f"  {product} 原材料 {material} 库存不足（库存: {material_stock}），需求计算阶段跳过此原料限制")
+                        continue
+                    else:
+                        # 排产阶段：严格检查，库存为 0 时不能生产套餐
+                        logger.info(f"  {product} 缺少原材料: {material} (库存: {material_stock})")
+                        return 0
                 max_producible = min(max_producible, max_by_material)
                 logger.info(f"  {product} 原材料 {material}: 库存 {material_stock}，每个需要 {quantity_per}，最大生产 {max_by_material}")
 

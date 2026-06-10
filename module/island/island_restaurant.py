@@ -349,14 +349,13 @@ class IslandRestaurant(IslandShopBase):
             _produced_pass = {}
             _force_skip_run = set()
             _loop_count = 0
-            _MAX_LOOP = 10
 
             self._schedule_and_track(_produced_pass)
 
             while self.get_idle_posts():
                 _loop_count += 1
-                if _loop_count > _MAX_LOOP:
-                    logger.warning(f"[循环] 已达最大迭代次数 {_MAX_LOOP}，强制退出")
+                if _loop_count > self._MAX_FILL_LOOP:
+                    logger.warning(f"[循环] 已达最大迭代次数 {self._MAX_FILL_LOOP}，强制退出")
                     break
                 self.current_totals = dict(_orig_totals)
                 for name, qty in _produced_pass.items():
@@ -375,7 +374,6 @@ class IslandRestaurant(IslandShopBase):
 
                 if sum(_produced_pass.values()) == prev_pass_total and self.to_post_products:
                     logger.info("[循环] 当前缺口排产失败，切换严格模式扫描")
-                    stuck_before = set(self.to_post_products.keys())
                     self.to_post_products = {}
                     self.current_totals = dict(_orig_totals)
                     for name, qty in _produced_pass.items():

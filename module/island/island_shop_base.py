@@ -8,6 +8,8 @@ from module.island.island_season import get_global_season_config
 
 
 class IslandShopBase(Island, WarehouseOCR):
+    _MAX_FILL_LOOP = 10  # while 循环填岗最大迭代次数
+
     def __init__(self, config, device=None, task=None):
         # 分别初始化每个父类
         Island.__init__(self, config=config, device=device, task=task)
@@ -415,14 +417,13 @@ class IslandShopBase(Island, WarehouseOCR):
             _produced_pass = {}  # 本次 run() 调用中已生产的累计
             _force_skip_run = set()  # 排产多次无法生产的缺口（非原料原因），本轮强制跳过
             _loop_count = 0
-            _MAX_LOOP = 10
 
             self._schedule_and_track(_produced_pass)
 
             while self.get_idle_posts():
                 _loop_count += 1
-                if _loop_count > _MAX_LOOP:
-                    logger.warning(f"[循环] 已达最大迭代次数 {_MAX_LOOP}，强制退出")
+                if _loop_count > self._MAX_FILL_LOOP:
+                    logger.warning(f"[循环] 已达最大迭代次数 {self._MAX_FILL_LOOP}，强制退出")
                     break
                 self.current_totals = dict(_orig_totals)
                 for name, qty in _produced_pass.items():
@@ -442,7 +443,6 @@ class IslandShopBase(Island, WarehouseOCR):
                 if sum(_produced_pass.values()) == prev_pass_total and self.to_post_products:
                     # 先切严格模式（绕"原料真没有"的坎儿）
                     logger.info("[循环] 当前缺口排产失败，切换严格模式扫描")
-                    stuck_before = set(self.to_post_products.keys())
                     self.to_post_products = {}
                     self.current_totals = dict(_orig_totals)
                     for name, qty in _produced_pass.items():

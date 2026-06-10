@@ -366,14 +366,13 @@ class IslandTeahouse(IslandShopBase):
             _produced_pass = {}
             _force_skip_run = set()
             _loop_count = 0
-            _MAX_LOOP = 10
 
             self._schedule_and_track(_produced_pass)
 
             while self.get_idle_posts():
                 _loop_count += 1
-                if _loop_count > _MAX_LOOP:
-                    logger.warning(f"[循环] 已达最大迭代次数 {_MAX_LOOP}，强制退出")
+                if _loop_count > self._MAX_FILL_LOOP:
+                    logger.warning(f"[循环] 已达最大迭代次数 {self._MAX_FILL_LOOP}，强制退出")
                     break
                 self.current_totals = dict(_orig_totals)
                 for name, qty in _produced_pass.items():

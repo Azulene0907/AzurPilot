@@ -383,9 +383,16 @@ class IslandTeahouse(IslandShopBase):
                 prev_pass_total = sum(_produced_pass.values())
                 self._schedule_and_track(_produced_pass)
 
-                if sum(_produced_pass.values()) == prev_pass_total:
-                    logger.info("[循环] 本轮无新增生产，退出循环")
-                    break
+                if sum(_produced_pass.values()) == prev_pass_total and self.to_post_products:
+                    logger.info("[循环] 当前缺口材料不足，切换严格模式扫描后续槽位")
+                    self.to_post_products = {}
+                    self._compute_base_demands(strict=True)
+                    if not self.to_post_products:
+                        break
+                    self.to_post_products = self.process_meal_requirements(self.to_post_products)
+                    logger.info(f"基础需求生产计划（严格模式）: {self.to_post_products}")
+                    self._schedule_and_track(_produced_pass)
+                    continue
 
             # ============ 检查是否还有空闲岗位，安排特殊餐品或常驻餐品 ============
             idle_posts_after_basic = self.get_idle_posts()

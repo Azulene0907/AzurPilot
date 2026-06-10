@@ -293,8 +293,9 @@ class IslandShopBase(Island, WarehouseOCR):
     # ============ 核心逻辑 ============
 
     def _schedule_and_track(self, produced_pass):
-        """排产并将本轮产出记录到 produced_pass 和 warehouse_counts。
-        produced_pass 跨多次排产累加，让后续 _compute_base_demands 能看到刚生产但未入库的量。
+        """排产并将本轮产出记录到 produced_pass。
+        produced_pass 跨多次排产累加，让后续 _compute_base_demands 的 current_totals
+        能看到刚生产但未入库的量（不修改 warehouse_counts——仓库里确实还没有）。
         """
         if not self.to_post_products:
             return
@@ -305,18 +306,21 @@ class IslandShopBase(Island, WarehouseOCR):
             produced_qty = to_post_snapshot[name] - remaining
             if produced_qty > 0:
                 produced_pass[name] = produced_pass.get(name, 0) + produced_qty
-                self.warehouse_counts[name] = self.warehouse_counts.get(name, 0) + produced_qty
 
-    def _compute_base_demands(self):
+    def _compute_base_demands(self, strict=False):
         """计算基础需求：严格按槽位顺序处理，找到第一个有缺口的槽位
         即停止，后续槽位本轮不处理。
 
         保留线：取本轮已迭代槽位中各产品的最高目标（无缺口时覆盖全部
         槽位，全部达标时保留线取最大目标），扣除后 current_totals 为
         超额库存，可作为原料被后续槽位消费。
+
+        Args:
+            strict: False（默认）需求计算阶段，原料为0不阻断套餐；
+                    True 排产无产出时使用，原料为0则跳过该缺口找下一个。
         """
         # ============ 基础需求计算 ============
-        logger.info("阶段：基础需求")
+        logger.info("阶段：基础需求" + ("（严格模式）" if strict else ""))
 
         self.to_post_products = {}
         virtual_totals = dict(self.current_totals)
@@ -328,7 +332,8 @@ class IslandShopBase(Island, WarehouseOCR):
             if current < target:
                 deficit = target - current
                 # 检查本轮能否至少生产一部分（>0 即材料部分可得）
-                if self.get_max_producible(name, min(6, deficit), skip_zero_materials=True) <= 0:
+                # strict 模式时不跳过零库存原料，避免停在无法生产的缺口上
+                if self.get_max_producible(name, min(6, deficit), skip_zero_materials=not strict) <= 0:
                     logger.info(f"槽位{idx + 1} {name} 材料完全不足，本轮跳过")
                     continue
                 self.to_post_products[name] = deficit
@@ -421,9 +426,18 @@ class IslandShopBase(Island, WarehouseOCR):
                 prev_pass_total = sum(_produced_pass.values())
                 self._schedule_and_track(_produced_pass)
 
-                if sum(_produced_pass.values()) == prev_pass_total:
-                    logger.info("[循环] 本轮无新增生产，退出循环")
-                    break
+                if sum(_produced_pass.values()) == prev_pass_total and self.to_post_products:
+                    # 排产无产出但缺口还在：原料未入库（仓库真没有），
+                    # 切换严格模式跳过当前缺口，找后面能做的槽位
+                    logger.info("[循环] 当前缺口材料不足，切换严格模式扫描后续槽位")
+                    self.to_post_products = {}
+                    self._compute_base_demands(strict=True)
+                    if not self.to_post_products:
+                        break
+                    self.to_post_products = self.process_meal_requirements(self.to_post_products)
+                    logger.info(f"基础需求生产计划（严格模式）: {self.to_post_products}")
+                    self._schedule_and_track(_produced_pass)
+                    continue
 
             # ============ 检查是否还有空闲岗位，安排特殊餐品或常驻餐品 ============
             # 重新检查空闲岗位（因为可能部分岗位被基础需求占用）

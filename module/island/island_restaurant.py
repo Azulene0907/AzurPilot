@@ -230,7 +230,7 @@ class IslandRestaurant(IslandShopBase):
                 logger.info(f"扣除豆腐：tofu -{tofu_needed} (用于制作 {product})")
 
     def apply_special_material_constraints(self, requirements):
-        """覆盖：根据豆腐库存调整需求"""
+        """覆盖：根据豆腐库存调整需求，豆腐不足时自动补入生产计划"""
         result = requirements.copy()
 
         # 获取豆腐库存
@@ -242,11 +242,14 @@ class IslandRestaurant(IslandShopBase):
             tofu_needed = cabbage_needed * 1  # 每个cabbage_tofu需要1个豆腐
 
             if tofu_stock < tofu_needed:
-                # 调整需求
                 max_cabbage = tofu_stock // 1
+                deficit = cabbage_needed - max_cabbage
                 result['cabbage_tofu'] = max_cabbage
-                logger.info(f"豆腐不足：cabbage_tofu需求从{cabbage_needed}调整为{max_cabbage}")
-                tofu_stock -= max_cabbage  # 更新剩余豆腐
+                # 豆腐本店可生产，限产的同时补入豆腐需求
+                if 'tofu' in self.name_to_config:
+                    result['tofu'] = result.get('tofu', 0) + deficit
+                    logger.info(f"豆腐不足：cabbage_tofu {cabbage_needed}→{max_cabbage}，补入 tofu x{deficit}")
+                tofu_stock -= max_cabbage
 
         # 处理tofu_meat的需求
         if 'tofu_meat' in result and result['tofu_meat'] > 0:
@@ -254,10 +257,13 @@ class IslandRestaurant(IslandShopBase):
             tofu_needed = tofu_meat_needed * 2  # 每个tofu_meat需要2个豆腐
 
             if tofu_stock < tofu_needed:
-                # 调整需求
                 max_tofu_meat = tofu_stock // 2
+                deficit = tofu_meat_needed - max_tofu_meat
                 result['tofu_meat'] = max_tofu_meat
-                logger.info(f"豆腐不足：tofu_meat需求从{tofu_meat_needed}调整为{max_tofu_meat}")
+                if 'tofu' in self.name_to_config:
+                    result['tofu'] = result.get('tofu', 0) + deficit * 2
+                    logger.info(f"豆腐不足：tofu_meat {tofu_meat_needed}→{max_tofu_meat}，补入 tofu x{deficit * 2}")
+                tofu_stock -= max_tofu_meat * 2
 
         return result
 

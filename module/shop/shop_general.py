@@ -144,9 +144,8 @@ class GeneralShop_250814(ShopClerk, ShopUI, ShopStatus):
         """
         overflow_coins = self.config.GeneralShop_OverflowCoins
 
-        # 阈值验证：必须 > 0 且 <= 600000
-        if overflow_coins <= 0 or overflow_coins > 600000:
-            logger.info(f'OverflowCoins={overflow_coins}, invalid range (1-600000), skip meowfficer overflow buy')
+        # 阈值检查：<= 0 表示功能关闭
+        if overflow_coins <= 0:
             return
 
         # 重新OCR识别金币（购买消耗物资后金币可能已变化）
@@ -172,6 +171,28 @@ class GeneralShop_250814(ShopClerk, ShopUI, ShopStatus):
         # 返回主界面
         self.ui_goto_main()
 
+    def _validate_config_values(self):
+        """验证并修正配置值。
+
+        检测 ConsumeCoins 和 OverflowCoins 的异常值（不在 0-600000 范围内），
+        并将异常值强制设置为零。
+
+        有效范围：0 表示关闭功能，1-600000 表示启用功能并设置阈值。
+        """
+        # 验证 ConsumeCoins
+        consume_coins = self.config.GeneralShop_ConsumeCoins
+        if consume_coins < 0 or consume_coins > 600000:
+            logger.warning(f'ConsumeCoins={consume_coins}, invalid range (0-600000), '
+                           f'set to 0 to disable feature')
+            self.config.GeneralShop_ConsumeCoins = 0
+
+        # 验证 OverflowCoins
+        overflow_coins = self.config.GeneralShop_OverflowCoins
+        if overflow_coins < 0 or overflow_coins > 600000:
+            logger.warning(f'OverflowCoins={overflow_coins}, invalid range (0-600000), '
+                           f'set to 0 to disable feature')
+            self.config.GeneralShop_OverflowCoins = 0
+
     def run(self):
         """运行通用商店购买流程。
 
@@ -180,6 +201,9 @@ class GeneralShop_250814(ShopClerk, ShopUI, ShopStatus):
         按照过滤器配置购买通用商店商品，支持刷新。
         购买完成后，若金币超过溢出阈值则自动购买猫箱。
         """
+        # 配置值验证：检测并修正异常值
+        self._validate_config_values()
+
         if not self.shop_filter:
             return
 

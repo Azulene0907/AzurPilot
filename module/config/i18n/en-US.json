@@ -2835,6 +2835,10 @@
       "name": "Use Repair Toolkit when any ship HP is below X (Corrosion 1)",
       "help": "Only takes effect when \"Use Repair Toolkit to repair ships\" is enabled.\nOnly attempts repair during Corrosion 1 Leveling+.\n0.0 ~ 1.0"
     },
+    "ActionPointPackUsingThreshold": {
+      "name": "In continuous fighting (Corrosion 1, Meowfficer, etc.), use Action Point Pack when action points are below X",
+      "help": "Recommended around 100. If the value is too high, action points will frequently exceed 200, affecting natural recovery.\nIf the value is too low, it may increase the number of pauses caused by depleted action points.\nCurrently only applies to Meowfficer and Corrosion 1."
+    },
     "DoRandomMapEvent": {
       "name": "Complete random map events",
       "help": "After completing Auto-Search, scan the map again to purchase from Akashi Shop, use Siren information collection device, use Siren detection device, and unlock two-fleet mechanisms."

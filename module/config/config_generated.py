@@ -529,7 +529,7 @@ class GeneratedConfig:
     OpsiGeneral_UseRepairPack = False
     OpsiGeneral_RepairPackThreshold = 0.9
     OpsiGeneral_RepairPackThresholdHazard1 = 0.5
-    OpsiGeneral_ActionPointPackUsingThreshold: 120
+    OpsiGeneral_ActionPointPackUsingThreshold = 120
     OpsiGeneral_DoRandomMapEvent = True
     OpsiGeneral_AkashiShopFilter = 'ActionPoint'
     OpsiGeneral_NotifyOpsiMail = True

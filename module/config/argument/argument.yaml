@@ -923,6 +923,7 @@ OpsiGeneral:
   UseRepairPack: false
   RepairPackThreshold: 0.9
   RepairPackThresholdHazard1: 0.5
+  ActionPointPackUsingThreshold: 120
   DoRandomMapEvent: true
   AkashiShopFilter: |-
     ActionPoint

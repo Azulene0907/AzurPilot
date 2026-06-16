@@ -11946,6 +11946,10 @@
         "type": "input",
         "value": 0.5
       },
+      "ActionPointPackUsingThreshold": {
+        "type": "input",
+        "value": 120
+      },
       "DoRandomMapEvent": {
         "type": "checkbox",
         "value": true

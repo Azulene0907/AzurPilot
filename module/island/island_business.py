@@ -7,7 +7,7 @@ from module.island_select_character.assets import *
 from module.logger import logger
 from module.base.button import Button
 from module.base.template import Template
-from module.base.utils import crop
+from module.base.utils import crop, get_color, color_similar
 from module.island.island_season import SEASONAL_ITEMS
 from datetime import datetime, timedelta
 from module.ocr.ocr import Duration
@@ -833,6 +833,19 @@ class IslandBusiness(Island):
             return review_btn
         return None
 
+    def _appear_business_settlement(self):
+        """检测经营结算按钮，并用按钮颜色过滤灰色休息中按钮条的误匹配。"""
+        settlement = self._appear_at_positions(BUSINESS_SETTLEMENT)
+        if not settlement:
+            return None
+
+        area_color = get_color(self.device.image, settlement.area)
+        if color_similar(area_color, BUSINESS_SETTLEMENT.color, threshold=50):
+            return settlement
+
+        logger.info(f"经营结算按钮颜色不匹配，跳过: {area_color}")
+        return None
+
     def _parse_character_config(self, config_str):
         if isinstance(config_str, str):
             return [char.strip() for char in config_str.split('>')]
@@ -1007,9 +1020,13 @@ class IslandBusiness(Island):
     # ===================================================================
 
     # 商店列表中的行常量
-    # 商店标签区域：x=(548, 668)，各行Y不同
-    # 按钮与标签的偏移：从标签左上角到按钮左上角
-    _SHOP_LABEL_TO_BUTTON_OFFSET = (472, 89)
+    # 列表页店名标签模板位于左侧，右侧经营按钮的 X 位置固定。
+    # Y 位置跟随店名标签所在行偏移，用于检测/点击蓝色、黄色、深蓝按钮。
+    _SHOP_BUTTON_X_RANGE = (1020, 1154)
+    _SHOP_LABEL_TO_BUTTON_OFFSET_Y = 88
+    _SHOP_BUTTON_HEIGHT = 27
+    _SHOP_REMAIN_TIME_X_RANGE = (1061, 1118)
+    _SHOP_BUTTON_TO_REMAIN_TIME_OFFSET_Y = (-79, -59)
     # 经营商店列表的可视区域
     _BUSINESS_LIST_SEARCH_AREA = (50, 80, 1200, 640)
     # 商店行高（经验值，适用于各行）
@@ -1046,17 +1063,39 @@ class IslandBusiness(Island):
             ly2 = btn.area[3] + sy1
             label_rect = (lx1, ly1, lx2, ly2)
 
-            # 计算按钮区域
-            dx, dy = self._SHOP_LABEL_TO_BUTTON_OFFSET
-            button_rect = (lx1 + dx, ly1 + dy, lx2 + dx, ly2 + dy)
+            # 计算右侧经营按钮区域。按钮宽度不能沿用店名标签宽度偏移，
+            # 否则会落到中间餐品图标上，导致黄色结算按钮被误判为 gray。
+            bx1, bx2 = self._SHOP_BUTTON_X_RANGE
+            by1 = ly1 + self._SHOP_LABEL_TO_BUTTON_OFFSET_Y
+            by2 = by1 + self._SHOP_BUTTON_HEIGHT
+            button_rect = (bx1, by1, bx2, by2)
 
             return {
                 'label_rect': label_rect,
                 'button_rect': button_rect,
+                'remain_time_rect': self._remain_time_rect_from_button(button_rect),
                 'similarity': sim,
             }
 
         return None
+
+    def _remain_time_rect_from_button(self, button_rect):
+        """根据经营按钮所在行推导该商店卡片上的剩余时间 OCR 区域。"""
+        _, by1, _, _ = button_rect
+        tx1, tx2 = self._SHOP_REMAIN_TIME_X_RANGE
+        oy1, oy2 = self._SHOP_BUTTON_TO_REMAIN_TIME_OFFSET_Y
+        return (tx1, by1 + oy1, tx2, by1 + oy2)
+
+    def _remain_time_button_from_shop(self, shop_info):
+        """创建跟随商店行位置的剩余时间 OCR Button。"""
+        rect = shop_info.get('remain_time_rect')
+        if rect is None:
+            rect = self._remain_time_rect_from_button(shop_info['button_rect'])
+        return Button(
+            area=rect, color=(),
+            button=rect,
+            file={'cn': '', 'en': '', 'jp': '', 'tw': ''}
+        )
 
     def _detect_button_at(self, button_rect):
         """
@@ -1070,8 +1109,6 @@ class IslandBusiness(Island):
         Returns:
             str: 'blue' | 'yellow' | 'darkblue' | 'gray'
         """
-        from module.base.utils import get_color, color_similar
-
         x1, y1, x2, y2 = button_rect
         area_color = get_color(self.device.image, (x1, y1, x2, y2))
 
@@ -1115,6 +1152,7 @@ class IslandBusiness(Island):
                     'shop': shop,
                     'status': status,
                     'button_rect': found['button_rect'],
+                    'remain_time_rect': found['remain_time_rect'],
                     'label_rect': found['label_rect'],
                     'similarity': found['similarity'],
                 })
@@ -1208,6 +1246,7 @@ class IslandBusiness(Island):
 
         scroll_attempt = 0
         while scroll_attempt < max_scrolls:
+            self.device.screenshot()
             visible_shops = self._scan_visible_batch_shops(batch_shops)
 
             if not visible_shops:
@@ -1268,7 +1307,6 @@ class IslandBusiness(Island):
 
                 elif status == 'yellow':
                     logger.info(f"{shop_name}: 黄色可领取奖励")
-                    self._has_seen_blue = True
 
                     # 点击该商店的黄色按钮
                     btn = Button(
@@ -1321,8 +1359,11 @@ class IslandBusiness(Island):
         if total_darkblue_count > 0 and not self._has_seen_blue:
             # 所有商店都在经营中（从未处理过蓝色按钮）
             logger.info(f"批次所有商店均在经营中，检测剩余时间")
-            self.device.screenshot()
-            self._ocr_and_delay_business_remain()
+            running_shop = self._find_running_shop_for_ocr(batch_shops)
+            self._ocr_and_delay_business_remain(
+                shop_info=running_shop,
+                ocr_name='OCR_BUSINESS_REMAIN_BATCH'
+            )
             return
 
         if self._has_seen_blue:
@@ -1355,27 +1396,15 @@ class IslandBusiness(Island):
             bool: True 表示仍在经营中
         """
         self._scroll_business_to_top()
-        visible = self._scan_visible_batch_shops(batch_shops)
-
-        running_shops = [r for r in visible if r['status'] == 'darkblue']
-        if not running_shops:
+        running_shop = self._find_running_shop_for_ocr(batch_shops, already_at_top=True)
+        if not running_shop:
             return False
 
-        logger.info(f"检测到经营中的商店: {[r['shop']['name'] for r in running_shops]}")
-
-        # OCR 剩余经营时间
-        self.device.screenshot()
-        ocr_remain = Duration(BUSINESS_REMAIN_TIME_AREA, lang='azur_lane',
-                              letter=(255, 255, 255), threshold=128,
-                              name='OCR_BUSINESS_REMAIN_BATCH')
-        remain = ocr_remain.ocr(self.device.image)
-        if remain and remain.total_seconds() > 0:
-            delay_seconds = remain.total_seconds() + 300
-            logger.info(f"剩余经营时间 {remain}，延时 {delay_seconds / 60:.1f} 分钟")
-            self.config.task_delay(minute=delay_seconds / 60)
-        else:
-            logger.warning("剩余时间OCR失败，使用默认2小时延时")
-            self.config.task_delay(minute=120)
+        logger.info(f"检测到经营中的商店: {running_shop['shop']['name']}")
+        self._ocr_and_delay_business_remain(
+            shop_info=running_shop,
+            ocr_name='OCR_BUSINESS_REMAIN_BATCH'
+        )
 
         return True
 
@@ -1383,20 +1412,62 @@ class IslandBusiness(Island):
     # 公用方法（传统和分批模式共享）
     # ===================================================================
 
-    def _ocr_and_delay_business_remain(self):
-        """OCR 经营剩余时间并设置延时"""
-        ocr_remain = Duration(BUSINESS_REMAIN_TIME_AREA, lang='azur_lane',
-                              letter=(255, 255, 255), threshold=128,
-                              name='OCR_BUSINESS_REMAIN')
-        remain = ocr_remain.ocr(self.device.image)
+    def _find_running_shop_for_ocr(self, batch_shops, already_at_top=False):
+        """
+        在批次商店中查找一个经营中的可见商店，用于读取其所在行的剩余时间。
+        """
+        if not already_at_top:
+            self._scroll_business_to_top()
+
+        seen_shop_names = set()
+        max_scrolls = 8
+        for scroll_attempt in range(max_scrolls):
+            self.device.screenshot()
+            visible = self._scan_visible_batch_shops(batch_shops)
+            for shop_info in visible:
+                seen_shop_names.add(shop_info['shop']['name'])
+                if shop_info['status'] == 'darkblue':
+                    return shop_info
+
+            if len(seen_shop_names) >= len(batch_shops):
+                break
+            if scroll_attempt < max_scrolls - 1:
+                self._scroll_business_down()
+                self.device.sleep(0.5)
+
+        return None
+
+    def _delay_by_business_remain(self, remain, fallback_target=True):
+        """根据 OCR 到的经营剩余时间设置任务延迟。"""
         if remain and remain.total_seconds() > 0:
             delay_seconds = remain.total_seconds() + 300
             logger.info(f"经营剩余 {remain}，延时 {delay_seconds / 60:.1f} 分钟后检测")
             self.config.task_delay(minute=delay_seconds / 60)
-        else:
-            logger.warning("剩余时间OCR失败，使用默认2小时延时")
+            return
+
+        logger.warning("剩余时间OCR失败，使用默认2小时延时")
+        if fallback_target:
             next_time = self._calculate_darkblue_delay()
             self.config.task_delay(target=next_time)
+        else:
+            self.config.task_delay(minute=120)
+
+    def _ocr_and_delay_business_remain(self, shop_info=None, ocr_name='OCR_BUSINESS_REMAIN'):
+        """OCR 经营剩余时间并设置延时"""
+        if shop_info:
+            ocr_button = self._remain_time_button_from_shop(shop_info)
+            logger.info(
+                f"OCR {shop_info['shop']['name']} 商店行剩余时间区域: {ocr_button.area}"
+            )
+        else:
+            ocr_button = BUSINESS_REMAIN_TIME_AREA
+            logger.info(f"OCR 默认经营剩余时间区域: {ocr_button.area}")
+
+        ocr_remain = Duration(ocr_button, lang='azur_lane',
+                              letter=(255, 255, 255), threshold=128,
+                              name=ocr_name)
+        remain = ocr_remain.ocr(self.device.image)
+        self._delay_by_business_remain(remain, fallback_target=shop_info is None)
 
     # 商店标签到对应 Template 的映射
     # TEMPLATE_BUSINESS_SHOP_* 是进入商店后显示的商店名称标签（店内用，120x35）
@@ -1554,7 +1625,7 @@ class IslandBusiness(Island):
             # 检测到"经营结算"按钮 → 优先处理结算（必须在 ISLAND_BACK 之前检测，
             # 防止结算界面出现时返回按钮也被检测到而导致提前退出）
             # 同时检测偏移150px位置（美食评审模式）
-            settlement = self._appear_at_positions(BUSINESS_SETTLEMENT)
+            settlement = self._appear_business_settlement()
             if settlement:
                 logger.info("检测到经营结算按钮")
                 self.device.click(settlement)

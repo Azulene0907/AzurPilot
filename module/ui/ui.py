@@ -278,6 +278,11 @@ class UI(InfoHandler):
             if self.ui_page_appear(page=destination, offset=offset):
                 logger.info(f'Page arrive: {destination}')
                 break
+            # 主界面新旧主题互为等价：目标为任一主界面时，
+            # 检测到另一主题也视为到达
+            if destination in (page_main, page_main_white) and self.is_in_main():
+                logger.info(f'Page arrive: {destination}')
+                break
 
             # 其他页面：按 A* 路径点击导航
             clicked = False
@@ -316,6 +321,10 @@ class UI(InfoHandler):
         self.ui_get_current_page(skip_first_screenshot=skip_first_screenshot)
         if self.ui_current == destination:
             logger.info("Already at %s" % destination)
+            return False
+        # 主界面新旧主题互为等价
+        if {self.ui_current, destination} == {page_main, page_main_white}:
+            logger.info("Already at %s (equivalent main page)" % destination)
             return False
         else:
             logger.info("Goto %s" % destination)

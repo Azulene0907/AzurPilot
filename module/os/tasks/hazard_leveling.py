@@ -364,7 +364,7 @@ class OpsiHazard1Leveling(CoinTaskMixin, OSMap):
             if self.config.OpsiGeneral_BuyActionPointLimit > 0:
                 keep_current_ap = False
             self.action_point_set(
-                cost=120, keep_current_ap=keep_current_ap, check_rest_ap=True
+                cost=100, keep_current_ap=keep_current_ap, check_rest_ap=True
             )
 
             # ===== 智能调度：黄币检查与任务切换 =====

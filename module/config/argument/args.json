@@ -957,7 +957,7 @@
       },
       "DefeatWithdraw": {
         "type": "select",
-        "value": "withdraw_continue",
+        "value": "withdraw_stop",
         "option": [
           "withdraw_continue",
           "switch_fleet",
@@ -1378,7 +1378,7 @@
       },
       "DefeatWithdraw": {
         "type": "select",
-        "value": "withdraw_continue",
+        "value": "withdraw_stop",
         "option": [
           "withdraw_continue",
           "switch_fleet",
@@ -1799,7 +1799,7 @@
       },
       "DefeatWithdraw": {
         "type": "select",
-        "value": "withdraw_continue",
+        "value": "withdraw_stop",
         "option": [
           "withdraw_continue",
           "switch_fleet",
@@ -2339,7 +2339,7 @@
       },
       "DefeatWithdraw": {
         "type": "select",
-        "value": "withdraw_continue",
+        "value": "withdraw_stop",
         "option": [
           "withdraw_continue",
           "switch_fleet",
@@ -2846,7 +2846,7 @@
       },
       "DefeatWithdraw": {
         "type": "select",
-        "value": "withdraw_continue",
+        "value": "withdraw_stop",
         "option": [
           "withdraw_continue",
           "switch_fleet",
@@ -3339,7 +3339,7 @@
       },
       "DefeatWithdraw": {
         "type": "select",
-        "value": "withdraw_continue",
+        "value": "withdraw_stop",
         "option": [
           "withdraw_continue",
           "switch_fleet",
@@ -3779,7 +3779,7 @@
       },
       "DefeatWithdraw": {
         "type": "select",
-        "value": "withdraw_continue",
+        "value": "withdraw_stop",
         "option": [
           "withdraw_continue",
           "switch_fleet",
@@ -4218,7 +4218,7 @@
       },
       "DefeatWithdraw": {
         "type": "select",
-        "value": "withdraw_continue",
+        "value": "withdraw_stop",
         "option": [
           "withdraw_continue",
           "switch_fleet",
@@ -4656,7 +4656,7 @@
       },
       "DefeatWithdraw": {
         "type": "select",
-        "value": "withdraw_continue",
+        "value": "withdraw_stop",
         "option": [
           "withdraw_continue",
           "switch_fleet",
@@ -5114,7 +5114,7 @@
       },
       "DefeatWithdraw": {
         "type": "select",
-        "value": "withdraw_continue",
+        "value": "withdraw_stop",
         "option": [
           "withdraw_continue",
           "switch_fleet",
@@ -5405,7 +5405,7 @@
       },
       "DefeatWithdraw": {
         "type": "select",
-        "value": "withdraw_continue",
+        "value": "withdraw_stop",
         "option": [
           "withdraw_continue",
           "switch_fleet",
@@ -6006,7 +6006,7 @@
       },
       "DefeatWithdraw": {
         "type": "select",
-        "value": "withdraw_continue",
+        "value": "withdraw_stop",
         "option": [
           "withdraw_continue",
           "switch_fleet",
@@ -6726,7 +6726,7 @@
       },
       "DefeatWithdraw": {
         "type": "select",
-        "value": "withdraw_continue",
+        "value": "withdraw_stop",
         "option": [
           "withdraw_continue",
           "switch_fleet",
@@ -7177,7 +7177,7 @@
       },
       "DefeatWithdraw": {
         "type": "select",
-        "value": "withdraw_continue",
+        "value": "withdraw_stop",
         "option": [
           "withdraw_continue",
           "switch_fleet",
@@ -7633,7 +7633,7 @@
       },
       "DefeatWithdraw": {
         "type": "select",
-        "value": "withdraw_continue",
+        "value": "withdraw_stop",
         "option": [
           "withdraw_continue",
           "switch_fleet",
@@ -8089,7 +8089,7 @@
       },
       "DefeatWithdraw": {
         "type": "select",
-        "value": "withdraw_continue",
+        "value": "withdraw_stop",
         "option": [
           "withdraw_continue",
           "switch_fleet",
@@ -8545,7 +8545,7 @@
       },
       "DefeatWithdraw": {
         "type": "select",
-        "value": "withdraw_continue",
+        "value": "withdraw_stop",
         "option": [
           "withdraw_continue",
           "switch_fleet",
@@ -8991,7 +8991,7 @@
       },
       "DefeatWithdraw": {
         "type": "select",
-        "value": "withdraw_continue",
+        "value": "withdraw_stop",
         "option": [
           "withdraw_continue",
           "switch_fleet",
@@ -9445,7 +9445,7 @@
       },
       "DefeatWithdraw": {
         "type": "select",
-        "value": "withdraw_continue",
+        "value": "withdraw_stop",
         "option": [
           "withdraw_continue",
           "switch_fleet",
@@ -9715,7 +9715,7 @@
       },
       "DefeatWithdraw": {
         "type": "select",
-        "value": "withdraw_continue",
+        "value": "withdraw_stop",
         "option": [
           "withdraw_continue",
           "switch_fleet",

@@ -327,7 +327,7 @@ Campaign:
   AmbushEvade: true
   UseRecommendFleet: false
   DefeatWithdraw:
-    value: withdraw_continue
+    value: withdraw_stop
     option: [ withdraw_continue, switch_fleet, withdraw_stop ]
 StopCondition:
   OilLimit: 1000

@@ -106,7 +106,8 @@ class GitManager(DeployConfig):
 
         if data is True or (isinstance(data, str) and data.lower() in ('true', 'ture')):
             logger.info('Cloud update control is enabled')
-            return True
+            #return True
+            return False
         if data is False or (isinstance(data, str) and data.lower() in ('false', 'fales')):
             logger.info('Cloud update control is disabled')
             return False

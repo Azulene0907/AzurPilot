@@ -146,7 +146,7 @@ class OpsiMeowfficerFarming(CoinTaskMixin, OSMap):
         if self.config.OpsiGeneral_BuyActionPointLimit > 0:
             keep_current_ap = False
 
-        self.action_point_set(cost=120, keep_current_ap=keep_current_ap, check_rest_ap=True)
+        self.action_point_set(cost=100, keep_current_ap=keep_current_ap, check_rest_ap=True)
         self.fleet_set(self.config.OpsiFleet_Fleet)
         self.os_order_execute(recon_scan=False, submarine_call=self.config.OpsiFleet_Submarine)
 

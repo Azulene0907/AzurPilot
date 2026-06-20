@@ -8,9 +8,9 @@ from module.island.island_select_character import *
 from module.island.warehouse import *
 from module.handler.login import LoginHandler
 from module.ui.ui import *
+from module.exception import GameStuckError
 from module.logger import logger
 import re
-import time
 
 ISLAND_MAP_CONFIRM_WAIT = 3
 
@@ -91,6 +91,11 @@ class Island(SelectCharacter):
         y2 = button.area[1] + relative_area[3]
         return (x1, y1, x2, y2)
 
+    def warehouse_filter_button_selected(self, button):
+        warehouse_area = self.warehouse_absolute_area(button, self.warehouse_area_relative)
+        warehouse_color = get_color(self.device.image, warehouse_area)
+        return color_similar(warehouse_color, (60, 61, 63), 80)
+
     def warehouse_filter(self, button1, button2=None):
         self.ui_goto(page_island_warehouse_filter, get_ship=False)
         # 定义按钮名称到网格坐标的映射
@@ -118,26 +123,19 @@ class Island(SelectCharacter):
             'factory': (3, 2),
             'other_from': (4, 2)
         }
+        all_kind_button = self.warehouse_filter_kind[kind_map['all_kind']]
+        all_from_button = self.warehouse_filter_from[from_map['all_from']]
         # 等待并重置筛选器，直到两个全选按钮都被选中
-        while 1:
-            self.device.screenshot()
-            # 检查all_kind全选按钮是否选中
-            all_kind_button = self.warehouse_filter_kind[kind_map['all_kind']]
-            warehouse_area = self.warehouse_absolute_area(all_kind_button, self.warehouse_area_relative)
-            warehouse_color = get_color(self.device.image, warehouse_area)
-            all_kind_selected = color_similar(warehouse_color, (60, 61, 63), 80)
-
-            # 检查all_from全选按钮是否选中
-            all_from_button = self.warehouse_filter_from[from_map['all_from']]
-            warehouse_area = self.warehouse_absolute_area(all_from_button, self.warehouse_area_relative)
-            warehouse_color = get_color(self.device.image, warehouse_area)
-            all_from_selected = color_similar(warehouse_color, (60, 61, 63), 80)
+        for _ in self.loop(timeout=8, skip_first=False):
+            all_kind_selected = self.warehouse_filter_button_selected(all_kind_button)
+            all_from_selected = self.warehouse_filter_button_selected(all_from_button)
 
             if all_kind_selected and all_from_selected:
                 break
-            else:
-                self.appear_then_click(FILTER_RESET)
-                self.device.sleep(0.3)
+            if self.appear_then_click(FILTER_RESET, interval=1):
+                continue
+        else:
+            raise GameStuckError("仓库筛选器重置超时")
 
         # 处理第一个按钮
         # 确定按钮属于哪个网格并获取按钮对象
@@ -148,20 +146,18 @@ class Island(SelectCharacter):
         else:
             raise ValueError(f"未知的按钮名称: {button1}")
 
-        while 1:
-            self.device.screenshot()
-
-            # 检查按钮是否已选中
-            warehouse_area = self.warehouse_absolute_area(button_obj, self.warehouse_area_relative)
-            warehouse_color = get_color(self.device.image, warehouse_area)
-            button_selected = color_similar(warehouse_color, (60, 61, 63), 80)
+        click_timer = Timer(1)
+        for _ in self.loop(timeout=8, skip_first=False):
+            button_selected = self.warehouse_filter_button_selected(button_obj)
 
             if button_selected:
                 break
-            else:
-                # 点击按钮
+            if click_timer.reached():
                 self.device.click(button_obj)
-                self.device.sleep(0.3)
+                click_timer.reset()
+                continue
+        else:
+            raise GameStuckError(f"仓库筛选按钮选择超时: {button1}")
 
         # 处理第二个按钮（如果有）
         if button2:
@@ -173,20 +169,18 @@ class Island(SelectCharacter):
             else:
                 raise ValueError(f"未知的按钮名称: {button2}")
 
-            while 1:
-                self.device.screenshot()
-
-                # 检查按钮是否已选中
-                warehouse_area = self.warehouse_absolute_area(button2_obj, self.warehouse_area_relative)
-                warehouse_color = get_color(self.device.image, warehouse_area)
-                button2_selected = color_similar(warehouse_color, (60, 61, 63), 80)
+            click_timer = Timer(1)
+            for _ in self.loop(timeout=8, skip_first=False):
+                button2_selected = self.warehouse_filter_button_selected(button2_obj)
 
                 if button2_selected:
                     break
-                else:
-                    # 点击按钮
+                if click_timer.reached():
                     self.device.click(button2_obj)
-                    self.device.sleep(0.3)
+                    click_timer.reset()
+                    continue
+            else:
+                raise GameStuckError(f"仓库筛选按钮选择超时: {button2}")
         self.appear_then_click(FILTER_CONFIRM)
         self.device.sleep(1)
 
@@ -206,8 +200,7 @@ class Island(SelectCharacter):
             self.ui_goto(page_island_management, get_ship=False)
         else:
             self.ui_goto(page_island,get_ship=False)
-            while True:
-                self.device.screenshot()
+            for _ in self.loop(timeout=20, skip_first=False):
                 if self.appear(ISLAND_MANAGEMENT_CHECK, offset=1):
                     break
                 if self.appear(ISLAND_CHECK, offset=1):
@@ -216,7 +209,10 @@ class Island(SelectCharacter):
                 if self.appear(ISLAND_SEASON_CHECK, offset=1):
                     self.device.click(ISLAND_SEASON_GOTO_ISLAND)
                     continue
-                self.device.sleep(0.3)
+                if self.ui_additional(get_ship=False):
+                    continue
+            else:
+                raise GameStuckError("进入岛屿管理页面超时")
             if self.appear(ISLAND_SEASON_CHECK, offset=1):
                 self.ui_goto(page_island_management, get_ship=False)
 
@@ -356,32 +352,32 @@ class Island(SelectCharacter):
         return False
     def post_manage_mode(self, post_manage_mode):
         post_manage_button = POST_MANAGE_BUSINESS if post_manage_mode == POST_MANAGE_PRODUCTION else POST_MANAGE_PRODUCTION
-        while True:
-            self.device.screenshot()
-            if self.appear_then_click(post_manage_button):
+        direct_click_timer = Timer(1)
+        for _ in self.loop(timeout=15, skip_first=False):
+            if self.appear_then_click(post_manage_button, interval=1):
                 continue
             elif self.appear(post_manage_mode):
-                break
+                return True
             elif self.appear(ISLAND_GATHER_COLLECT_CHECK, offset=30):
                 # 当前在采集页签，appear_then_click 无法匹配到生产和经营页签
                 # 直接点击目标页签按钮（Button.button 返回点击坐标 tuple）
-                self.device.click(post_manage_button)
-                self.device.sleep(0.3)
-                continue
+                if direct_click_timer.reached():
+                    self.device.click(post_manage_button)
+                    direct_click_timer.reset()
+                    continue
+        raise GameStuckError(f"切换岗位管理页签超时: {post_manage_mode}")
 
     def post_manage_mode_collection(self):
         """
         切换到采集页签（管理页面左侧第三个页签）
         如果已经在采集页签则跳过，否则从当前页签切换过去
         """
-        while True:
-            self.device.screenshot()
+        for _ in self.loop(timeout=15, skip_first=False):
             if self.appear(ISLAND_GATHER_COLLECT_CHECK):
-                break
-            if self.appear_then_click(ISLAND_GATHER_COLLECT):
-                self.device.sleep(0.3)
+                return True
+            if self.appear_then_click(ISLAND_GATHER_COLLECT, interval=1):
                 continue
-            self.device.sleep(0.3)
+        raise GameStuckError("切换采集页签超时")
 
     def select_product(self, product_selection, product_selection_check):
         # 清理之前可能残留的滑动记录，避免多次调用累积触发单按钮死循环检测
@@ -418,21 +414,21 @@ class Island(SelectCharacter):
         return False
 
     def post_close(self):
-        while 1:
-            self.device.screenshot()
+        for _ in self.loop(timeout=15, skip_first=False):
             if self.ui_page_appear(page_island_postmanage) and not self.appear(ISLAND_POST_CHECK) and not self.appear(ISLAND_POST_VACANT_CHECK):
-                break
+                return True
             if self.appear(ISLAND_GET, offset=30):
                 self.device.click(ISLAND_POST_SAFE_AREA)
                 continue
             if self.appear(ISLAND_POST_CHECK) or self.appear(ISLAND_POST_VACANT_CHECK):
                 self.device.click(POST_CLOSE)
                 continue
+        logger.warning("关闭岗位详情超时")
+        return False
     def post_get_and_close(self):
-        while 1:
-            self.device.screenshot()
+        for _ in self.loop(timeout=20, skip_first=False):
             if self.ui_page_appear(page_island_postmanage) and not self.appear(ISLAND_POST_CHECK) and not self.appear(ISLAND_POST_VACANT_CHECK):
-                break
+                return True
             if self.appear(ERROR1, offset=30):
                 self.device.click(POST_CLOSE)
                 self.island_error = True
@@ -451,11 +447,12 @@ class Island(SelectCharacter):
             if (self.appear(ISLAND_POST_CHECK) or self.appear(ISLAND_POST_VACANT_CHECK)) and not self.appear(POST_GET, offset=(50, 0)):
                 self.device.click(POST_CLOSE)
                 continue
+        logger.warning("收取并关闭岗位详情超时")
+        return False
 
     def post_get_stay(self):
         """收取当前岗位产物并停留在岗位详情界面，供后续直接复检状态。"""
-        while 1:
-            self.device.screenshot()
+        for _ in self.loop(timeout=20, skip_first=False):
             if self.appear(ERROR1, offset=30):
                 self.device.click(POST_CLOSE)
                 self.island_error = True
@@ -473,10 +470,11 @@ class Island(SelectCharacter):
                 continue
             if (self.appear(ISLAND_POST_CHECK) or self.appear(ISLAND_POST_VACANT_CHECK) or self.ui_page_appear(page_island_postmanage)):
                 return True
+        logger.warning("收取当前岗位产物超时")
+        return False
 
     def post_get_and_add(self,product_selection,product_selection_check):
-        while 1:
-            self.device.screenshot()
+        for _ in self.loop(timeout=30, skip_first=False):
             if self.appear(ERROR1,offset=30):
                 self.device.click(POST_CLOSE)
                 self.island_error = True
@@ -526,6 +524,8 @@ class Island(SelectCharacter):
                     and not self.appear(ISLAND_POST_VACANT_CHECK, offset=30)
             ):
                 return True
+        logger.warning("收取并追加岗位派遣超时")
+        return False
 
     def back_to_postmanage_from_dispatch(self):
         """从角色选择或产品选择流程退回岗位管理页。"""
@@ -579,8 +579,7 @@ class Island(SelectCharacter):
         retry_swipe_timer = Timer(3, count=3).start()
         retry_swipe_used = 0
         full_retry_used = 0
-        while True:
-            image = self.device.screenshot()
+        for image in self.loop(timeout=45, skip_first=False):
             post_appear = self.appear(post,offset=300)
             if post_appear:
                 retry_swipe_timer.reset()
@@ -621,9 +620,8 @@ class Island(SelectCharacter):
                     retry_swipe_used = 0
                     retry_swipe_timer.reset()
                     continue
-                from module.exception import GameStuckError
                 raise GameStuckError(f"岗位按钮 {post} 完整重试后仍未识别")
-            self.device.sleep(0.5)
+        raise GameStuckError(f"打开岗位详情超时: {post}")
     def post_manage_up_swipe(self,distance):
         self.device.swipe_vector(vector=(0, -distance), box=(688, 69, 725, 656), name="PostUpSwipe")
         self.device.click(POST_MANAGE_SWIPE_STOP, control_check=False)
@@ -672,32 +670,13 @@ class Island(SelectCharacter):
         increment = target - 1
         add_ten_clicks = increment // 10
         add_one_clicks = increment % 10
-        while True:
-            if add_ten_clicks == 0:
-                break
-            self.device.click(ADD_TEN_A)
-            add_ten_clicks -= 1
-            if add_ten_clicks == 0:
-                break
-            self.device.click(ADD_TEN_B)
-            add_ten_clicks -= 1
-            if add_ten_clicks == 0:
-                break
-            self.device.click(ADD_TEN_C)
-            add_ten_clicks -= 1
-        while True:
-            if add_one_clicks == 0:
-                break
-            self.device.click(ADD_ONE_A)
-            add_one_clicks -= 1
-            if add_one_clicks == 0:
-                break
-            self.device.click(ADD_ONE_B)
-            add_one_clicks -= 1
-            if add_one_clicks == 0:
-                break
-            self.device.click(ADD_ONE_C)
-            add_one_clicks -= 1
+        add_ten_buttons = (ADD_TEN_A, ADD_TEN_B, ADD_TEN_C)
+        for index in range(add_ten_clicks):
+            self.device.click(add_ten_buttons[index % len(add_ten_buttons)])
+
+        add_one_buttons = (ADD_ONE_A, ADD_ONE_B, ADD_ONE_C)
+        for index in range(add_one_clicks):
+            self.device.click(add_one_buttons[index % len(add_one_buttons)])
 
     def switch_shop_tab(self, tab_check, tab_button, verify_button=None):
         """切换岛屿商店内的页签。"""
@@ -728,18 +707,19 @@ class Island(SelectCharacter):
         if item_name:
             logger.info(f"购买 {item_name} x{quantity}")
 
-        while 1:
-            self.device.screenshot()
+        for _ in self.loop(timeout=10, skip_first=False):
             if self.appear(ISLAND_SHOPPING_CHECK):
                 break
             if self.appear_then_click(item_button, interval=1.2):
                 continue
+        else:
+            logger.warning(f"打开购买弹窗超时: {item_name or item_button}")
+            return False
 
         if self.appear(ISLAND_SHOPPING_CHECK):
             self.set_buy_number(quantity)
 
-        while 1:
-            self.device.screenshot()
+        for _ in self.loop(timeout=15, skip_first=False):
             shop_visible = self.appear(shop_check, offset=1)
             shopping_shown = self.appear(ISLAND_SHOPPING_CHECK)
             if shop_visible and not shopping_shown:
@@ -752,6 +732,9 @@ class Island(SelectCharacter):
             if self.appear(ISLAND_SHOP_GET):
                 self.device.click(ISLAND_SHOP_CONFIRM)
                 continue
+        else:
+            logger.warning(f"确认购买超时: {item_name or item_button}")
+            return False
 
         if self.appear(ISLAND_SHOP_GET):
             self.device.click(ISLAND_SHOP_CONFIRM)
@@ -1029,16 +1012,12 @@ class Island(SelectCharacter):
             self.island_down(1000)
             self.island_left(500)
             self.island_down(2500)
-            start_time = time.time()
-            while True:
-                self.device.screenshot()
-                if self.appear_then_click(ISLAND_MILL):
+            for _ in self.loop(timeout=5, skip_first=False):
+                if self.appear_then_click(ISLAND_MILL, interval=1):
                     continue
                 if self.appear(ISLAND_MILL_CHECK):
                     logger.info("成功到达磨坊")
                     return True
-                if time.time() - start_time > 5:
-                    logger.info("超时，重新尝试")
-                    break
+            logger.info("超时，重新尝试")
         logger.info(f"尝试{max_attempts}次后仍然失败")
         return False

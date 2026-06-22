@@ -783,7 +783,7 @@
     "YukikazeTaskManager": {
       "TaskPriorityAdjustment": {
         "type": "textarea",
-        "value": "Restart\n> OpsiCrossMonth\n> Commission > Tactical > Research\n> Exercise\n> Dorm > Meowfficer > Guild > Gacha\n> Reward\n> ShopFrequent > ShopOnce > Shipyard > Freebies\n> PrivateQuarters\n> OpsiExplore\n> Minigame > Awaken\n> OpsiAshBeacon\n> OpsiDaily > OpsiShop > OpsiVoucher > EventShop\n> OpsiAbyssal > OpsiStronghold > OpsiObscure > OpsiArchive\n> Daily > Hard > OpsiAshBeacon > OpsiAshAssist > OpsiMonthBoss\n> Sos > EventSp > EventA > EventB > EventC > EventD\n> RaidDaily > CoalitionSp > WarArchives > MaritimeEscort\n> IslandJuuEatery > IslandJuuCoffee > IslandGrill > IslandTeahouse > IslandRestaurant\n> IslandFarm > IslandRancher > IslandMineForest > IslandDailyGather > IslandManufacture\n> IslandAirDrop > IslandBusiness > IslandDailyOrder > IslandDailyInteract > IslandPearlSell > IslandCargoPreparation\n> Event > Event2 > Event3 > Raid > Hospital > HospitalEvent > Coalition > RaidScuttle > Main > Main2 > Main3\n> OpsiMeowfficerFarming\n> GemsFarming\n> Ambush11\n> OpsiHazard1Leveling\n> ThreeOilLowCost"
+        "value": "Restart\n> OpsiCrossMonth\n> OpsiScheduling\n> Commission > Tactical > Research\n> Exercise\n> Dorm > Meowfficer > Guild > Gacha\n> Reward\n> ShopFrequent > ShopOnce > Shipyard > Freebies\n> PrivateQuarters\n> OpsiExplore\n> Minigame > Awaken\n> OpsiAshBeacon\n> OpsiDaily > OpsiShop > OpsiVoucher > EventShop\n> OpsiAbyssal > OpsiStronghold > OpsiObscure > OpsiArchive\n> Daily > Hard > OpsiAshBeacon > OpsiAshAssist > OpsiMonthBoss\n> Sos > EventSp > EventA > EventB > EventC > EventD\n> RaidDaily > CoalitionSp > WarArchives > MaritimeEscort\n> IslandJuuEatery > IslandJuuCoffee > IslandGrill > IslandTeahouse > IslandRestaurant\n> IslandFarm > IslandRancher > IslandMineForest > IslandDailyGather > IslandManufacture\n> IslandAirDrop > IslandBusiness > IslandDailyOrder > IslandDailyInteract > IslandPearlSell > IslandCargoPreparation\n> Event > Event2 > Event3 > Raid > Hospital > HospitalEvent > Coalition > RaidScuttle > Main > Main2 > Main3\n> OpsiMeowfficerFarming\n> GemsFarming\n> Ambush11\n> OpsiHazard1Leveling\n> ThreeOilLowCost"
       }
     },
     "Storage": {
@@ -956,8 +956,13 @@
         "value": false
       },
       "DefeatWithdraw": {
-        "type": "checkbox",
-        "value": true
+        "type": "select",
+        "value": "withdraw_stop",
+        "option": [
+          "withdraw_continue",
+          "switch_fleet",
+          "withdraw_stop"
+        ]
       }
     },
     "StopCondition": {
@@ -1372,8 +1377,13 @@
         "value": false
       },
       "DefeatWithdraw": {
-        "type": "checkbox",
-        "value": true
+        "type": "select",
+        "value": "withdraw_stop",
+        "option": [
+          "withdraw_continue",
+          "switch_fleet",
+          "withdraw_stop"
+        ]
       }
     },
     "StopCondition": {
@@ -1788,8 +1798,13 @@
         "value": false
       },
       "DefeatWithdraw": {
-        "type": "checkbox",
-        "value": true
+        "type": "select",
+        "value": "withdraw_stop",
+        "option": [
+          "withdraw_continue",
+          "switch_fleet",
+          "withdraw_stop"
+        ]
       }
     },
     "StopCondition": {
@@ -2323,8 +2338,13 @@
         "value": false
       },
       "DefeatWithdraw": {
-        "type": "checkbox",
-        "value": true
+        "type": "select",
+        "value": "withdraw_stop",
+        "option": [
+          "withdraw_continue",
+          "switch_fleet",
+          "withdraw_stop"
+        ]
       }
     },
     "StopCondition": {
@@ -2825,8 +2845,13 @@
         "value": false
       },
       "DefeatWithdraw": {
-        "type": "checkbox",
-        "value": true
+        "type": "select",
+        "value": "withdraw_stop",
+        "option": [
+          "withdraw_continue",
+          "switch_fleet",
+          "withdraw_stop"
+        ]
       }
     },
     "StopCondition": {
@@ -3313,8 +3338,13 @@
         "value": false
       },
       "DefeatWithdraw": {
-        "type": "checkbox",
-        "value": true
+        "type": "select",
+        "value": "withdraw_stop",
+        "option": [
+          "withdraw_continue",
+          "switch_fleet",
+          "withdraw_stop"
+        ]
       }
     },
     "StopCondition": {
@@ -3748,8 +3778,13 @@
         "value": false
       },
       "DefeatWithdraw": {
-        "type": "checkbox",
-        "value": true
+        "type": "select",
+        "value": "withdraw_stop",
+        "option": [
+          "withdraw_continue",
+          "switch_fleet",
+          "withdraw_stop"
+        ]
       }
     },
     "StopCondition": {
@@ -4182,8 +4217,13 @@
         "value": false
       },
       "DefeatWithdraw": {
-        "type": "checkbox",
-        "value": true
+        "type": "select",
+        "value": "withdraw_stop",
+        "option": [
+          "withdraw_continue",
+          "switch_fleet",
+          "withdraw_stop"
+        ]
       }
     },
     "StopCondition": {
@@ -4615,8 +4655,13 @@
         "value": false
       },
       "DefeatWithdraw": {
-        "type": "checkbox",
-        "value": true
+        "type": "select",
+        "value": "withdraw_stop",
+        "option": [
+          "withdraw_continue",
+          "switch_fleet",
+          "withdraw_stop"
+        ]
       }
     },
     "StopCondition": {
@@ -5068,8 +5113,13 @@
         "value": false
       },
       "DefeatWithdraw": {
-        "type": "checkbox",
-        "value": true
+        "type": "select",
+        "value": "withdraw_stop",
+        "option": [
+          "withdraw_continue",
+          "switch_fleet",
+          "withdraw_stop"
+        ]
       }
     },
     "StopCondition": {
@@ -5354,8 +5404,13 @@
         "value": false
       },
       "DefeatWithdraw": {
-        "type": "checkbox",
-        "value": true
+        "type": "select",
+        "value": "withdraw_stop",
+        "option": [
+          "withdraw_continue",
+          "switch_fleet",
+          "withdraw_stop"
+        ]
       }
     },
     "StopCondition": {
@@ -5950,8 +6005,13 @@
         "value": false
       },
       "DefeatWithdraw": {
-        "type": "checkbox",
-        "value": true
+        "type": "select",
+        "value": "withdraw_stop",
+        "option": [
+          "withdraw_continue",
+          "switch_fleet",
+          "withdraw_stop"
+        ]
       }
     },
     "Coalition": {
@@ -6665,8 +6725,13 @@
         "value": false
       },
       "DefeatWithdraw": {
-        "type": "checkbox",
-        "value": true
+        "type": "select",
+        "value": "withdraw_stop",
+        "option": [
+          "withdraw_continue",
+          "switch_fleet",
+          "withdraw_stop"
+        ]
       }
     },
     "StopCondition": {
@@ -6705,6 +6770,28 @@
       "ReachLevel": {
         "type": "input",
         "value": 0
+      }
+    },
+    "WarArchives": {
+      "DailyRunCount": {
+        "type": "input",
+        "value": 0
+      },
+      "DailyRunCountRemain": {
+        "type": "stored",
+        "value": 0,
+        "display": "hide"
+      },
+      "DailyRunCountRecord": {
+        "type": "stored",
+        "value": "2020-01-01 00:00:00",
+        "validate": "datetime",
+        "display": "hide"
+      },
+      "DailyRunCountLimit": {
+        "type": "stored",
+        "value": 0,
+        "display": "hide"
       }
     },
     "Fleet": {
@@ -7111,8 +7198,13 @@
         "value": false
       },
       "DefeatWithdraw": {
-        "type": "checkbox",
-        "value": true
+        "type": "select",
+        "value": "withdraw_stop",
+        "option": [
+          "withdraw_continue",
+          "switch_fleet",
+          "withdraw_stop"
+        ]
       }
     },
     "StopCondition": {
@@ -7562,8 +7654,13 @@
         "value": false
       },
       "DefeatWithdraw": {
-        "type": "checkbox",
-        "value": true
+        "type": "select",
+        "value": "withdraw_stop",
+        "option": [
+          "withdraw_continue",
+          "switch_fleet",
+          "withdraw_stop"
+        ]
       }
     },
     "StopCondition": {
@@ -8013,8 +8110,13 @@
         "value": false
       },
       "DefeatWithdraw": {
-        "type": "checkbox",
-        "value": true
+        "type": "select",
+        "value": "withdraw_stop",
+        "option": [
+          "withdraw_continue",
+          "switch_fleet",
+          "withdraw_stop"
+        ]
       }
     },
     "StopCondition": {
@@ -8464,8 +8566,13 @@
         "value": false
       },
       "DefeatWithdraw": {
-        "type": "checkbox",
-        "value": true
+        "type": "select",
+        "value": "withdraw_stop",
+        "option": [
+          "withdraw_continue",
+          "switch_fleet",
+          "withdraw_stop"
+        ]
       }
     },
     "StopCondition": {
@@ -8905,8 +9012,13 @@
         "value": false
       },
       "DefeatWithdraw": {
-        "type": "checkbox",
-        "value": true
+        "type": "select",
+        "value": "withdraw_stop",
+        "option": [
+          "withdraw_continue",
+          "switch_fleet",
+          "withdraw_stop"
+        ]
       }
     },
     "StopCondition": {
@@ -9354,8 +9466,13 @@
         "value": false
       },
       "DefeatWithdraw": {
-        "type": "checkbox",
-        "value": true
+        "type": "select",
+        "value": "withdraw_stop",
+        "option": [
+          "withdraw_continue",
+          "switch_fleet",
+          "withdraw_stop"
+        ]
       }
     },
     "StopCondition": {
@@ -9619,8 +9736,13 @@
         "value": false
       },
       "DefeatWithdraw": {
-        "type": "checkbox",
-        "value": true
+        "type": "select",
+        "value": "withdraw_stop",
+        "option": [
+          "withdraw_continue",
+          "switch_fleet",
+          "withdraw_stop"
+        ]
       }
     },
     "Coalition": {
@@ -10371,7 +10493,7 @@
       },
       "ServerUpdate": {
         "type": "input",
-        "value": "00:00, 06:00, 12:00, 18:00, 21:00",
+        "value": "00:00, 06:00, 12:00, 18:00",
         "display": "hide"
       },
       "Sensitive": {
@@ -10472,7 +10594,7 @@
       },
       "ServerUpdate": {
         "type": "input",
-        "value": "00:00",
+        "value": "00:00, 06:00, 12:00, 18:00",
         "display": "hide"
       },
       "Sensitive": {
@@ -13243,12 +13365,12 @@
       },
       "SuccessInterval": {
         "type": "input",
-        "value": 0,
+        "value": 60,
         "display": "hide"
       },
       "FailureInterval": {
         "type": "input",
-        "value": 120,
+        "value": 60,
         "display": "hide"
       },
       "ServerUpdate": {
@@ -13279,6 +13401,18 @@
         "value": 40000
       },
       "ActionPointPreserve": {
+        "type": "input",
+        "value": 200
+      },
+      "ActionPointEarlyTriggerEnable": {
+        "type": "checkbox",
+        "value": true,
+        "option": [
+          true,
+          false
+        ]
+      },
+      "ActionPointEarlyTriggerThreshold": {
         "type": "input",
         "value": 200
       },
@@ -14144,6 +14278,7 @@
           "roasted_skewer",
           "stir_fried_chicken",
           "steak_bowl",
+          "crayfish_stir_fry",
           "carnival",
           "double_energy"
         ]
@@ -14156,6 +14291,7 @@
           "roasted_skewer",
           "stir_fried_chicken",
           "steak_bowl",
+          "crayfish_stir_fry",
           "carnival",
           "double_energy"
         ]
@@ -14168,6 +14304,7 @@
           "roasted_skewer",
           "stir_fried_chicken",
           "steak_bowl",
+          "crayfish_stir_fry",
           "carnival",
           "double_energy"
         ]
@@ -14180,6 +14317,7 @@
           "roasted_skewer",
           "stir_fried_chicken",
           "steak_bowl",
+          "crayfish_stir_fry",
           "carnival",
           "double_energy"
         ]
@@ -14192,6 +14330,7 @@
           "roasted_skewer",
           "stir_fried_chicken",
           "steak_bowl",
+          "crayfish_stir_fry",
           "carnival",
           "double_energy"
         ]
@@ -14409,6 +14548,10 @@
           4
         ]
       },
+      "WorkerFilter": {
+        "type": "textarea",
+        "value": "WorkerJuu"
+      },
       "MinFarm": {
         "type": "input",
         "value": 660
@@ -14435,6 +14578,10 @@
           3,
           4
         ]
+      },
+      "WorkerFilter": {
+        "type": "textarea",
+        "value": "WorkerJuu"
       },
       "MinOrchard": {
         "type": "input",
@@ -14468,6 +14615,10 @@
           1,
           2
         ]
+      },
+      "WorkerFilter": {
+        "type": "textarea",
+        "value": "WorkerJuu"
       },
       "MinNursery": {
         "type": "input",
@@ -14568,6 +14719,10 @@
       "Wool": {
         "type": "checkbox",
         "value": true
+      },
+      "WoolWorkerFilter": {
+        "type": "textarea",
+        "value": "WorkerJuu"
       }
     },
     "IslandFishery": {
@@ -14593,6 +14748,10 @@
         "value": 50
       },
       "MinShrimp": {
+        "type": "input",
+        "value": 50
+      },
+      "MinCrayfish": {
         "type": "input",
         "value": 50
       },
@@ -14706,6 +14865,10 @@
           4
         ]
       },
+      "WorkerFilter": {
+        "type": "textarea",
+        "value": "WorkerJuu"
+      },
       "MinCopper": {
         "type": "input",
         "value": 50
@@ -14748,6 +14911,10 @@
           3,
           4
         ]
+      },
+      "WorkerFilter": {
+        "type": "textarea",
+        "value": "WorkerJuu"
       },
       "MinElegant": {
         "type": "input",
@@ -15396,6 +15563,7 @@
           "carrot_omelette",
           "stir_fried_chicken",
           "steak_bowl",
+          "crayfish_stir_fry",
           "carnival",
           "double_energy"
         ]
@@ -15414,6 +15582,7 @@
           "carrot_omelette",
           "stir_fried_chicken",
           "steak_bowl",
+          "crayfish_stir_fry",
           "carnival",
           "double_energy"
         ]
@@ -15432,6 +15601,7 @@
           "carrot_omelette",
           "stir_fried_chicken",
           "steak_bowl",
+          "crayfish_stir_fry",
           "carnival",
           "double_energy"
         ]
@@ -15450,6 +15620,7 @@
           "carrot_omelette",
           "stir_fried_chicken",
           "steak_bowl",
+          "crayfish_stir_fry",
           "carnival",
           "double_energy"
         ]
@@ -15468,6 +15639,7 @@
           "carrot_omelette",
           "stir_fried_chicken",
           "steak_bowl",
+          "crayfish_stir_fry",
           "carnival",
           "double_energy"
         ]
@@ -15486,6 +15658,7 @@
           "carrot_omelette",
           "stir_fried_chicken",
           "steak_bowl",
+          "crayfish_stir_fry",
           "carnival",
           "double_energy"
         ]
@@ -15504,6 +15677,7 @@
           "carrot_omelette",
           "stir_fried_chicken",
           "steak_bowl",
+          "crayfish_stir_fry",
           "carnival",
           "double_energy"
         ]
@@ -15522,6 +15696,7 @@
           "carrot_omelette",
           "stir_fried_chicken",
           "steak_bowl",
+          "crayfish_stir_fry",
           "carnival",
           "double_energy"
         ]
@@ -15542,6 +15717,7 @@
           "carrot_omelette",
           "stir_fried_chicken",
           "steak_bowl",
+          "crayfish_stir_fry",
           "carnival",
           "double_energy"
         ]
@@ -16230,6 +16406,13 @@
           true,
           false
         ]
+      }
+    },
+    "IslandDailyGather": {
+      "WorkerFilter": {
+        "type": "textarea",
+        "value": "",
+        "preserve_empty": true
       }
     },
     "Storage": {
